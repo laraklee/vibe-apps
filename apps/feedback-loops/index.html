@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Body Loops: What Happens Next?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-friendly {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Dedicated iPad Landscape & Pro Viewport Grid Rule */
+    @media (min-width: 900px), (orientation: landscape) and (min-height: 600px) {
+      .ipad-landscape-grid {
+        display: grid !important;
+        grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+      }
+      .ipad-col-telemetry {
+        grid-column: span 7 / span 7 !important;
+      }
+      .ipad-col-controls {
+        grid-column: span 5 / span 5 !important;
+      }
+    }
+
+    /* Live Action Animations */
+    @keyframes sweatDrop {
+      0% { transform: translateY(-6px) scale(0.8); opacity: 0; }
+      50% { opacity: 1; transform: translateY(0px) scale(1.1); }
+      100% { transform: translateY(12px) scale(0.6); opacity: 0; }
+    }
+    .anim-sweat {
+      animation: sweatDrop 1s infinite ease-in;
+    }
+
+    @keyframes shiverVibe {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-2px, 1px) rotate(-1deg); }
+      40% { transform: translate(2px, -1px) rotate(1deg); }
+      60% { transform: translate(-2px, -1px) rotate(-1deg); }
+      80% { transform: translate(2px, 1px) rotate(1deg); }
+    }
+    .anim-shiver {
+      display: inline-block;
+      animation: shiverVibe 0.18s infinite linear;
+    }
+
+    @keyframes floatParticle {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-6px) scale(1.08); }
+    }
+    .anim-float {
+      animation: floatParticle 1.4s infinite ease-in-out;
+    }
+
+    @keyframes contractWave {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(244,114,182,0.4)); }
+      50% { transform: scale(1.12); filter: drop-shadow(0 0 10px rgba(244,114,182,0.9)); }
+    }
+    .anim-contract {
+      animation: contractWave 0.9s infinite ease-in-out;
+    }
+
+    @keyframes joltNeedle {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.3) rotate(5deg); }
+      80% { transform: scale(0.9) rotate(-3deg); }
+      100% { transform: scale(1); }
+    }
+    .jolt {
+      animation: joltNeedle 0.3s ease-out;
+    }
+
+    /* Confetti Particle Overlay */
+    #confettiCanvas {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-900">
+
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- TOP HEADER HUD -->
+  <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-40 px-3 md:px-5 py-2.5 backdrop-blur">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
+      <!-- Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center text-lg font-black shadow-md shadow-cyan-500/20">
+          🔄
+        </div>
+        <div>
+          <h1 class="text-base md:text-lg font-black tracking-tight text-white font-friendly">
+            Body Loops
+          </h1>
+          <p class="text-[11px] text-slate-400 font-medium hidden sm:block">What Happens Next?</p>
+        </div>
+      </div>
+
+      <!-- Live Counters & Dev Jump Selector -->
+      <div class="flex items-center gap-2 text-xs font-mono-code">
+        <!-- Direct Jump Selector -->
+        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+          <span class="text-slate-400 text-[11px] hidden md:inline">Jump:</span>
+          <select id="caseSelector" class="bg-transparent text-cyan-300 font-bold text-xs outline-none cursor-pointer">
+            <option value="0" class="bg-slate-900">1: Hot PE</option>
+            <option value="1" class="bg-slate-900">2: Freezing Rain</option>
+            <option value="2" class="bg-slate-900">3: High Sugar</option>
+            <option value="3" class="bg-slate-900">4: Low Sugar</option>
+            <option value="4" class="bg-slate-900">5: Childbirth</option>
+            <option value="5" class="bg-slate-900">6: Severe Shock</option>
+          </select>
+        </div>
+
+        <button id="btnSound" class="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition" title="Toggle Sound">
+          <span id="soundIcon">🔊</span>
+        </button>
+
+        <div class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800">
+          <span class="text-slate-400">Score:</span>
+          <span id="scoreVal" class="text-cyan-400 font-bold ml-1">0</span>
+        </div>
+
+        <div class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800">
+          <span class="text-slate-400">Streak:</span>
+          <span id="streakVal" class="text-amber-400 font-bold ml-1">🔥 0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN ARENA -->
+  <main class="w-full max-w-6xl mx-auto flex-1 p-3 md:p-5 flex flex-col justify-center">
+
+    <!-- WELCOME SCREEN -->
+    <section id="screenWelcome" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl max-w-xl mx-auto text-center space-y-5 my-auto">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 text-xs font-bold uppercase tracking-wider font-mono-code">
+        9th Grade Biology Lab
+      </div>
+
+      <h2 class="text-2xl md:text-3xl font-black text-white font-friendly">
+        Your Body is a Balancing Act!
+      </h2>
+
+      <p class="text-slate-300 text-sm leading-relaxed">
+        When something disrupts your body, simple parts spring into action:
+      </p>
+
+      <div class="grid grid-cols-3 gap-2.5 text-center text-xs">
+        <div class="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+          <div class="text-xl mb-1">⚡</div>
+          <div class="font-bold text-slate-100 font-friendly">1. Stimulus</div>
+          <p class="text-[11px] text-slate-400 leading-tight">The change</p>
+        </div>
+        <div class="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+          <div class="text-xl mb-1">👁️</div>
+          <div class="font-bold text-slate-100 font-friendly">2. Sensor</div>
+          <p class="text-[11px] text-slate-400 leading-tight">Notices it</p>
+        </div>
+        <div class="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+          <div class="text-xl mb-1">🛠️</div>
+          <div class="font-bold text-slate-100 font-friendly">3. Effector</div>
+          <p class="text-[11px] text-slate-400 leading-tight">Takes action!</p>
+        </div>
+      </div>
+
+      <div class="p-3 rounded-xl bg-slate-950/90 border border-indigo-900/40 text-xs text-left text-indigo-200">
+        💡 <strong>Your Job:</strong> Tap the effector buttons to steer the body to its target. Then diagnose if the loop was <strong>Negative</strong> (steered back to normal) or <strong>Positive</strong> (snowballed to a goal or crash).
+      </div>
+
+      <button id="btnStart" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-indigo-600 hover:from-cyan-300 hover:to-indigo-500 text-slate-950 font-black text-sm uppercase tracking-wider font-friendly shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+        Start First Mission &rarr;
+      </button>
+    </section>
+
+    <!-- ACTIVE EXPERIMENT SCREEN -->
+    <section id="screenMission" class="hidden ipad-landscape-grid gap-3.5 w-full">
+
+      <!-- LEFT COLUMN: CONTEXT, ANIMATED THEATER & TELEMETRY -->
+      <div class="ipad-col-telemetry flex flex-col gap-3">
+
+        <!-- Stimulus & Sensor Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 md:p-4 shadow-lg backdrop-blur">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span id="txtTopicBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-800 text-cyan-300 border border-slate-700">
+              Thermoregulation
+            </span>
+            <span id="txtHeaderGoal" class="text-xs font-mono-code font-bold text-emerald-400">
+              🎯 Checkpoint: 98.6°F
+            </span>
+          </div>
+
+          <div class="space-y-2 text-xs md:text-sm">
+            <div class="flex items-start gap-2">
+              <span class="text-base text-amber-400">⚡</span>
+              <div>
+                <strong class="text-slate-200">1. Stimulus:</strong>
+                <span id="txtStimulus" class="text-slate-300 ml-1">...</span>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2">
+              <span class="text-base text-sky-400">👁️</span>
+              <div>
+                <strong class="text-slate-200">2. Sensor:</strong>
+                <span id="txtSensor" class="text-slate-300 ml-1">...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Animated Action Visual Theater -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-col items-center justify-center relative overflow-hidden h-24 md:h-28">
+          <div id="visualStage" class="flex flex-col items-center justify-center transition-all duration-300">
+            <!-- Dynamic Animation SVGs Injected Here -->
+          </div>
+        </div>
+
+        <!-- Meter & Dynamic Target Telemetry -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 md:p-4 shadow-lg flex flex-col gap-2.5">
+          
+          <div class="flex items-center justify-between text-xs font-mono-code text-slate-400">
+            <span class="font-bold text-slate-200" id="txtMetricName">BODY TEMPERATURE</span>
+            <span id="targetCalloutBadge" class="text-emerald-400 font-bold">🎯 Checkpoint: Normal Range</span>
+          </div>
+
+          <!-- The Horizontal Bar Meter -->
+          <div class="w-full h-9 bg-slate-950 rounded-xl border-2 border-slate-800 relative overflow-hidden flex items-center px-1">
+            <!-- Green Normal Range Zone -->
+            <div id="barGreenZone" class="absolute top-1 bottom-1 bg-emerald-500/25 border-2 border-emerald-400/80 rounded-lg flex items-center justify-center transition-all">
+              <span class="text-[10px] font-mono-code font-bold text-emerald-300 uppercase tracking-tight">Checkpoint</span>
+            </div>
+
+            <!-- Goal / Threshold Zone -->
+            <div id="barGoalZone" class="hidden absolute top-1 bottom-1 w-28 bg-pink-500/25 border-2 border-dashed border-pink-400 rounded-lg flex items-center justify-center">
+              <span id="txtGoalZoneLabel" class="text-[10px] font-mono-code font-bold text-pink-300 text-center leading-tight">Goal: Baby Born</span>
+            </div>
+
+            <!-- Real-Time Sliding Needle Indicator -->
+            <div id="meterNeedle" class="absolute top-1 bottom-1 w-6 rounded-lg bg-cyan-400 shadow-md shadow-cyan-400/70 transition-all duration-200 flex items-center justify-center z-20" style="left: 50%;">
+              <div class="w-1 h-5 bg-slate-950 rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Telemetry Readout -->
+          <div class="flex items-center justify-between text-xs font-mono-code text-slate-400">
+            <span id="txtScaleMin">95.0°F</span>
+            <div class="font-bold text-white text-sm">
+              <span id="txtCurrentVal" class="text-cyan-300 text-base">102.8</span>
+              <span id="txtUnit" class="text-slate-400 text-xs ml-0.5">°F</span>
+            </div>
+            <span id="txtScaleMax">105.0°F</span>
+          </div>
+
+          <!-- Live Story Log Bubble -->
+          <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs font-mono-code flex items-start gap-2">
+            <span class="text-cyan-400 mt-0.5">❯</span>
+            <p id="txtNarrative" class="text-slate-300 leading-snug">
+              Choose an effector button on the right to start steering the body.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: INTERACTIVE CONTROLS & DIAGNOSIS -->
+      <div class="ipad-col-controls flex flex-col gap-3">
+
+        <!-- STEP 1: EFFECTOR SELECTION BUTTONS -->
+        <div id="panelEffectors" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 md:p-4 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono-code">
+              🛠️ 3. Effector: What Action?
+            </h3>
+            <span id="tapCountBadge" class="text-[11px] font-mono-code text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
+              Tap to Steer
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-400">
+            Tap a button repeatedly to push the needle toward the target:
+          </p>
+
+          <div id="effectorButtonsContainer" class="flex flex-col gap-2.5">
+            <!-- Dynamic Choice Buttons Injected Here -->
+          </div>
+        </div>
+
+        <!-- STEP 2: CELEBRATION & CLASSIFICATION (Shown once target reached) -->
+        <div id="panelClassification" class="hidden bg-slate-900 border-2 border-emerald-500/70 rounded-2xl p-4 shadow-xl space-y-3.5">
+          
+          <!-- Victory Banner -->
+          <div class="p-3 rounded-xl bg-emerald-950/90 border border-emerald-700/80 flex items-center gap-3">
+            <span class="text-2xl">🎉</span>
+            <div>
+              <div class="font-bold text-white text-sm font-friendly" id="txtSuccessTitle">Target Reached!</div>
+              <p class="text-[11px] text-emerald-300 leading-tight" id="txtSuccessDesc">
+                You successfully steered the body! Now, how is this loop classified?
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-[10px] font-mono-code uppercase tracking-wider text-slate-400 block mb-1">
+              Final Question
+            </span>
+            <h4 class="text-xs md:text-sm font-bold text-white">
+              What kind of feedback loop was this?
+            </h4>
+          </div>
+
+          <div class="grid grid-cols-1 gap-2.5">
+            <!-- Negative Feedback Button -->
+            <button id="btnNegative" class="p-3 rounded-xl bg-slate-950 border-2 border-slate-800 hover:border-emerald-400 text-left transition-all group">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-white text-xs group-hover:text-emerald-300 flex items-center gap-1.5 font-friendly">
+                  <span>⚖️</span> Negative Feedback
+                </span>
+                <span class="text-[10px] uppercase font-mono-code px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Back to Normal</span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-tight">
+                <strong>Steered back to normal</strong>: Opposed the disturbance to restore the checkpoint.
+              </p>
+            </button>
+
+            <!-- Positive Feedback Button -->
+            <button id="btnPositive" class="p-3 rounded-xl bg-slate-950 border-2 border-slate-800 hover:border-pink-400 text-left transition-all group">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-white text-xs group-hover:text-pink-300 flex items-center gap-1.5 font-friendly">
+                  <span>🚀</span> Positive Feedback
+                </span>
+                <span class="text-[10px] uppercase font-mono-code px-1.5 py-0.5 rounded bg-pink-950 text-pink-400 border border-pink-800">Amplified to Goal</span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-tight">
+                <strong>Pushed all the way to a goal</strong>: Amplified the change until a finish line was crossed.
+              </p>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: SYSTEM SUMMARY & NEXT MISSION (Shown after answer) -->
+        <div id="panelSummary" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+          
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span id="summaryBadgeIcon" class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-sm">✓</span>
+              <div>
+                <h4 id="summaryTitle" class="text-xs md:text-sm font-bold text-white font-friendly">Awesome Job!</h4>
+                <p id="summarySubtitle" class="text-[10px] text-slate-400 font-mono-code">Negative Feedback Confirmed</p>
+              </div>
+            </div>
+
+            <button id="btnNextMission" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-600 hover:from-cyan-300 text-slate-950 font-black text-xs font-friendly shadow-md shadow-cyan-500/20 transition flex items-center gap-1 whitespace-nowrap">
+              <span>Next Mission</span> &rarr;
+            </button>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs text-slate-300 leading-relaxed" id="txtSummaryExplanation">
+            <!-- Injected explanation -->
+          </div>
+
+          <!-- 4-Box Visual Sequence -->
+          <div class="grid grid-cols-2 gap-2 text-[10px] font-mono-code">
+            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block uppercase">⚡ 1. Stimulus</span>
+              <span id="sumBoxStimulus" class="font-bold text-slate-200 mt-0.5 block truncate">...</span>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block uppercase">👁️ 2. Sensor</span>
+              <span id="sumBoxSensor" class="font-bold text-slate-200 mt-0.5 block truncate">...</span>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block uppercase">🛠️ 3. Effector</span>
+              <span id="sumBoxEffector" class="font-bold text-slate-200 mt-0.5 block truncate">...</span>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block uppercase">🔄 Feedback Type</span>
+              <span id="sumBoxType" class="font-bold mt-0.5 block truncate text-cyan-400">...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- IN-PANE LANDSCAPE MASTERY QUIZ (No full-page scrolling) -->
+        <div id="panelQuizInPane" class="hidden bg-slate-900 border-2 border-indigo-500/60 rounded-2xl p-3.5 md:p-4 shadow-xl space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-base">🧠</span>
+              <div>
+                <h4 class="text-xs md:text-sm font-black text-white font-friendly">Quick Mastery Quiz</h4>
+                <p class="text-[10px] text-slate-400 font-mono-code">Define & Classify Loops</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800 font-mono-code text-[11px] text-cyan-400">
+              Q <span id="quizNum">1</span> / 7
+            </span>
+          </div>
+
+          <p id="quizQuestionText" class="text-xs font-bold text-slate-100 leading-snug">
+            Question text
+          </p>
+
+          <div id="quizOptionsContainer" class="flex flex-col gap-2">
+            <!-- Dynamic Quiz Option Buttons -->
+          </div>
+
+          <div id="quizFeedbackBox" class="hidden p-2.5 rounded-xl text-xs font-mono-code leading-relaxed">
+            <!-- Instant feedback -->
+          </div>
+
+          <button id="btnNextQuiz" class="hidden w-full py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-600 hover:from-cyan-300 text-slate-950 font-black text-xs font-friendly shadow-md shadow-cyan-500/20 transition">
+            Next Question &rarr;
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- FINAL REPORT / MASTERY SCREEN -->
+    <section id="screenResults" class="hidden bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl max-w-xl mx-auto text-center space-y-5 my-auto">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center text-3xl mx-auto shadow-lg shadow-cyan-500/25">
+        🏆
+      </div>
+
+      <h2 class="text-2xl md:text-3xl font-black text-white font-friendly">
+        Mission Complete!
+      </h2>
+      <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+        You successfully controlled all biological circuits and differentiated between <strong>Negative</strong> and <strong>Positive</strong> feedback loops!
+      </p>
+
+      <div class="grid grid-cols-2 gap-3 text-left">
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800">
+          <span class="text-[10px] text-slate-400 uppercase font-mono-code block">Final Score</span>
+          <span id="txtFinalScore" class="text-2xl font-black text-cyan-400 font-mono-code mt-0.5 block">0</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800">
+          <span class="text-[10px] text-slate-400 uppercase font-mono-code block">Highest Streak</span>
+          <span id="txtFinalStreak" class="text-2xl font-black text-amber-400 font-mono-code mt-0.5 block">🔥 0</span>
+        </div>
+      </div>
+
+      <!-- Quick Concept Summary -->
+      <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-left text-xs text-slate-300 space-y-1.5 font-mono-code">
+        <div class="font-bold text-white text-[11px] uppercase">Remember for Class:</div>
+        <p>• <span class="text-emerald-400 font-bold">Negative Feedback:</span> Fixes a problem by pushing it in the <ins>opposite</ins> direction back to a <em>checkpoint (normal range)</em>.</p>
+        <p>• <span class="text-pink-400 font-bold">Positive Feedback:</span> Pushes <ins>further</ins> in the same direction until reaching a <em>definitive goal</em> (like childbirth) or a <em>runaway crash</em> (shock).</p>
+      </div>
+
+      <button id="btnRestart" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-indigo-600 hover:from-cyan-300 text-slate-950 font-black text-sm uppercase tracking-wider font-friendly shadow-lg shadow-cyan-500/20 transition">
+        🔄 Play Again
+      </button>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-800/80 bg-slate-950/90 py-2.5 px-4 text-center text-[11px] text-slate-500 font-mono-code">
+    9th Grade Biology &bull; Stimulus &bull; Sensor &bull; Effector &bull; Feedback Loops
+  </footer>
+
+  <script>
+    /* =========================================================================
+       AUDIO SYNTHESIZER (Pure Web Audio API)
+       ========================================================================= */
+    class WebSoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      beep(freq = 440) {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+      uhOh() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.linearRampToValueAtTime(140, now + 0.2);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+      win() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.08);
+          gain.gain.setValueAtTime(0.09, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.08 + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.25);
+        });
+      }
+      applause() {
+        if (!this.enabled) return;
+        this.win();
+      }
+    }
+    const sound = new WebSoundFX();
+
+    /* =========================================================================
+       6 CURRICULAR CASES
+       ========================================================================= */
+    const ALL_MISSIONS = [
+      // 1. THERMOREGULATION: ABOVE CHECKPOINT
+      {
+        id: "temp_hot",
+        topic: "Thermoregulation: Hot P.E. Class",
+        headerGoal: "🎯 Checkpoint: 98.6°F",
+        goalZoneLabel: "🎯 Checkpoint",
+        targetCallout: "🎯 Checkpoint: Normal (98.6°F)",
+        targetDescription: "Normal resting body temperature is around 98.6°F. Steer the body back down to the green checkpoint zone!",
+        stimulusTitle: "Running Outside in Hot Sun",
+        stimulusDesc: "During P.E. class on a hot field, muscle movement and sun heat spike core temperature to 102.8°F.",
+        sensorName: "Temperature sensors in your skin and brain (hypothalamus)",
+        metricName: "Core Body Temperature",
+        unit: "°F",
+        scaleMin: 95.0,
+        scaleMax: 105.0,
+        targetZoneMin: 98.0,
+        targetZoneMax: 99.2,
+        initialVal: 102.8,
+        targetVal: 98.6,
+        startDirection: "above",
+        targetType: "checkpoint",
+        loopType: "negative",
+        congratulationTitle: "🎯 Checkpoint Reached: 98.6°F Normal!",
+        congratulationDesc: "Sweat droplets evaporated and skin vessels opened up, cooling the body back to normal range!",
+        idleVisual: `<div class="text-4xl">🏃‍♂️🔥</div><div class="text-xs text-amber-300 font-semibold">Running hot: 102.8°F!</div>`,
+        actionVisualCorrect: `<div class="text-4xl anim-sweat">💦🌊❄️</div><div class="text-xs text-cyan-300 font-semibold">Sweating & Skin Vessels Opening!</div>`,
+        actionVisualWrong: `<div class="text-4xl anim-shiver">🥶🔥⚠️</div><div class="text-xs text-rose-400 font-semibold">Shivering added extra heat!</div>`,
+        options: [
+          {
+            label: "Sweat Glands & Blood Vessels Open (Vasodilation)",
+            desc: "Sweat evaporates off skin to carry heat away, and skin vessels widen to release heat.",
+            delta: -1.4,
+            isCorrect: true,
+            storyCorrect: "Sweat releases heat through evaporation! Needle cools down toward 98.6°F.",
+            storyWrong: ""
+          },
+          {
+            label: "Muscles Shiver & Blood Vessels Squeeze (Vasoconstriction)",
+            desc: "Muscles twitch rapidly to generate heat, and skin vessels tighten to trap heat inside.",
+            delta: +1.0,
+            isCorrect: false,
+            storyCorrect: "",
+            storyWrong: "Uh oh! Shivering makes muscles create MORE heat, pushing temp higher! Try the other button to cool down."
+          }
+        ],
+        explanation: "Because your sweat glands pushed temperature in the <strong>opposite direction</strong> of the heat spike (bringing it back down to the 98.6°F checkpoint), this is a <strong>Negative Feedback Loop</strong>."
+      },
+
+      // 2. THERMOREGULATION: BELOW CHECKPOINT
+      {
+        id: "temp_cold",
+        topic: "Thermoregulation: Freezing Rain",
+        headerGoal: "🎯 Checkpoint: 98.6°F",
+        goalZoneLabel: "🎯 Checkpoint",
+        targetCallout: "🎯 Checkpoint: Normal (98.6°F)",
+        targetDescription: "Soaking wet in cold wind, core temperature drops to 95.5°F. Warm the body back up to the green checkpoint zone!",
+        stimulusTitle: "Caught in Freezing Rain",
+        stimulusDesc: "Cold wind and wet clothes pull heat from the body, dropping core temperature to 95.5°F.",
+        sensorName: "Temperature sensors in skin and hypothalamus",
+        metricName: "Core Body Temperature",
+        unit: "°F",
+        scaleMin: 94.0,
+        scaleMax: 104.0,
+        targetZoneMin: 98.0,
+        targetZoneMax: 99.2,
+        initialVal: 95.5,
+        targetVal: 98.6,
+        startDirection: "below",
+        targetType: "checkpoint",
+        loopType: "negative",
+        congratulationTitle: "🎯 Checkpoint Reached: 98.6°F Normal!",
+        congratulationDesc: "Shivering muscle friction and blood vessel constriction warmed the body back up!",
+        idleVisual: `<div class="text-4xl anim-shiver">🥶🌧️</div><div class="text-xs text-sky-300 font-semibold">Freezing cold: 95.5°F!</div>`,
+        actionVisualCorrect: `<div class="text-4xl anim-shiver">⚡🔥🧥</div><div class="text-xs text-amber-300 font-semibold">Muscles shivering & trapping core heat!</div>`,
+        actionVisualWrong: `<div class="text-4xl anim-sweat">💦❄️⚠️</div><div class="text-xs text-rose-400 font-semibold">Sweating lost even more heat!</div>`,
+        options: [
+          {
+            label: "Skeletal Muscles Shiver & Skin Vessels Tighten",
+            desc: "Muscle contractions create friction heat, and tightening skin vessels traps warmth in core.",
+            delta: +1.1,
+            isCorrect: true,
+            storyCorrect: "Shivering friction produces heat! Needle warms back up toward 98.6°F.",
+            storyWrong: ""
+          },
+          {
+            label: "Sweat Glands Release Water onto Skin",
+            desc: "Water is pumped onto skin surface to evaporate away.",
+            delta: -1.0,
+            isCorrect: false,
+            storyCorrect: "",
+            storyWrong: "Brrr! Sweating when cold makes you freeze even faster! Tap the other button to warm up."
+          }
+        ],
+        explanation: "Even though temperature was raised, the response still <strong>opposed the cold drop</strong> to restore the 98.6°F set-point. Counteracting change to return to a checkpoint is always a <strong>Negative Feedback Loop</strong>."
+      },
+
+      // 3. BLOOD SUGAR: ABOVE CHECKPOINT
+      {
+        id: "glucose_high",
+        topic: "Blood Sugar: After Eating Candy",
+        headerGoal: "🎯 Checkpoint: 90 mg/dL",
+        goalZoneLabel: "🎯 Checkpoint",
+        targetCallout: "🎯 Checkpoint: Normal (90 mg/dL)",
+        targetDescription: "Normal fasting blood sugar is around 80-105 mg/dL. Steer glucose back down into the green checkpoint range!",
+        stimulusTitle: "Sugary Snack at Lunch",
+        stimulusDesc: "Eating a sugary snack digests into glucose, causing blood sugar to spike to 160 mg/dL.",
+        sensorName: "Glucose sensors in the pancreas (Beta cells)",
+        metricName: "Blood Glucose Concentration",
+        unit: "mg/dL",
+        scaleMin: 50,
+        scaleMax: 200,
+        targetZoneMin: 80,
+        targetZoneMax: 105,
+        initialVal: 160,
+        targetVal: 90,
+        startDirection: "above",
+        targetType: "checkpoint",
+        loopType: "negative",
+        congratulationTitle: "🎯 Checkpoint Reached: 90 mg/dL Normal!",
+        congratulationDesc: "Insulin opened cellular doors, storing extra sugar as glycogen in liver and muscle cells!",
+        idleVisual: `<div class="text-4xl anim-float">🍭🍬🩸</div><div class="text-xs text-amber-300 font-semibold">Blood sugar spike: 160 mg/dL!</div>`,
+        actionVisualCorrect: `<div class="text-4xl">🗝️🚪📦</div><div class="text-xs text-emerald-300 font-semibold">Insulin unlocks cells -> Storing sugar as glycogen!</div>`,
+        actionVisualWrong: `<div class="text-4xl anim-float">🍫🩸⚠️</div><div class="text-xs text-rose-400 font-semibold">Glucagon dumped MORE sugar into blood!</div>`,
+        options: [
+          {
+            label: "Pancreas Releases Insulin (Sugar Storage Key)",
+            desc: "Insulin unlocks liver and muscle cells so they absorb sugar and store it as glycogen.",
+            delta: -24,
+            isCorrect: true,
+            storyCorrect: "Insulin unlocks cells, moving sugar from blood into storage! Needle drops to normal.",
+            storyWrong: ""
+          },
+          {
+            label: "Pancreas Releases Glucagon (Sugar Release Hormone)",
+            desc: "Glucagon commands the liver to break down stored reserves and dump more glucose into blood.",
+            delta: +20,
+            isCorrect: false,
+            storyCorrect: "",
+            storyWrong: "Yikes! Glucagon dumps extra sugar into blood, spiking it higher! Tap Insulin to bring it down."
+          }
+        ],
+        explanation: "Insulin pushed blood sugar in the <strong>opposite direction</strong> of the spike, steering it down to the normal 90 mg/dL checkpoint. Opposing change to maintain balance is a <strong>Negative Feedback Loop</strong>."
+      },
+
+      // 4. BLOOD SUGAR: BELOW CHECKPOINT
+      {
+        id: "glucose_low",
+        topic: "Blood Sugar: Skipped Breakfast",
+        headerGoal: "🎯 Checkpoint: 90 mg/dL",
+        goalZoneLabel: "🎯 Checkpoint",
+        targetCallout: "🎯 Checkpoint: Normal (90 mg/dL)",
+        targetDescription: "Having skipped breakfast, blood sugar drops to 60 mg/dL. Release stored sugar to steer it back up to normal!",
+        stimulusTitle: "Skipping Meals / Fasting",
+        stimulusDesc: "Brain and muscles consumed available glucose during morning classes, dropping blood sugar to 60 mg/dL.",
+        sensorName: "Glucose sensors in the pancreas (Alpha cells)",
+        metricName: "Blood Glucose Concentration",
+        unit: "mg/dL",
+        scaleMin: 50,
+        scaleMax: 200,
+        targetZoneMin: 80,
+        targetZoneMax: 105,
+        initialVal: 60,
+        targetVal: 90,
+        startDirection: "below",
+        targetType: "checkpoint",
+        loopType: "negative",
+        congratulationTitle: "🎯 Checkpoint Reached: 90 mg/dL Normal!",
+        congratulationDesc: "Glucagon unlocked liver glycogen reserves, restoring blood sugar safely to 90 mg/dL!",
+        idleVisual: `<div class="text-4xl">🥱📉🩸</div><div class="text-xs text-sky-300 font-semibold">Blood sugar low: 60 mg/dL!</div>`,
+        actionVisualCorrect: `<div class="text-4xl">🔓📦✨</div><div class="text-xs text-amber-300 font-semibold">Glucagon unlocks stored liver glycogen!</div>`,
+        actionVisualWrong: `<div class="text-4xl">🔒🚫⚠️</div><div class="text-xs text-rose-400 font-semibold">Insulin locked away remaining sugar!</div>`,
+        options: [
+          {
+            label: "Pancreas Releases Glucagon (Unlocks Stored Liver Sugar)",
+            desc: "Glucagon tells the liver to break stored glycogen down into free glucose and release it into blood.",
+            delta: +11,
+            isCorrect: true,
+            storyCorrect: "Liver releases stored sugar into the bloodstream! Needle rises toward the 90 mg/dL checkpoint.",
+            storyWrong: ""
+          },
+          {
+            label: "Pancreas Releases Insulin (Locks Sugar Into Storage)",
+            desc: "Insulin removes remaining sugar from blood and locks it inside cells.",
+            delta: -10,
+            isCorrect: false,
+            storyCorrect: "",
+            storyWrong: "Danger! Releasing insulin when sugar is low causes dangerous hypoglycemia! Tap Glucagon to raise sugar."
+          }
+        ],
+        explanation: "Even though blood sugar went up, glucagon <strong>counteracted the low drop</strong> to restore the 90 mg/dL checkpoint. Returning to a checkpoint is a <strong>Negative Feedback Loop</strong>."
+      },
+
+      // 5. CHILDBIRTH: DEFINITIVE GOAL (AMPLIFYING POSITIVE LOOP)
+      {
+        id: "childbirth",
+        topic: "Childbirth: Active Labor Contractions",
+        headerGoal: "Goal: Baby Born",
+        goalZoneLabel: "Baby Born!",
+        targetCallout: "🏁 Goal: Baby Born! (100% Contractions)",
+        targetDescription: "Baby's head pushes on the cervix. Amplify contractions until reaching the 100% Baby Born goal!",
+        stimulusTitle: "Baby's Head Pushes Against the Cervix",
+        stimulusDesc: "At the end of pregnancy, the baby's head presses against the cervix. This mechanical pressure stretches sensitive nerve receptors.",
+        sensorName: "Stretch sensors in the cervix send nerve signals to brain",
+        metricName: "Uterine Contraction Strength",
+        unit: "%",
+        scaleMin: 0,
+        scaleMax: 100,
+        targetZoneMin: 88,
+        targetZoneMax: 100,
+        initialVal: 20,
+        targetVal: 100,
+        startDirection: "below",
+        targetType: "goal",
+        loopType: "positive",
+        congratulationTitle: "🎉 Definitive Goal Reached: Baby Born!",
+        congratulationDesc: "Oxytocin pushed contractions harder and harder until the definitive goal was accomplished!",
+        idleVisual: `<div class="text-4xl">🤰👶</div><div class="text-xs text-pink-300 font-semibold">Labor Begins: 20% Contractions</div>`,
+        actionVisualCorrect: `<div class="text-4xl anim-contract">🌊👶✨</div><div class="text-xs text-emerald-300 font-semibold">Oxytocin surge pushes contractions stronger!</div>`,
+        actionVisualWrong: `<div class="text-4xl">😴🛑</div><div class="text-xs text-rose-400 font-semibold">Contractions stopped! Labor stalled! ⚠️</div>`,
+        options: [
+          {
+            label: "Uterine Muscles Completely Relax",
+            desc: "Muscles stop contracting, relieving stretch on the cervix.",
+            delta: -20,
+            isCorrect: false,
+            storyCorrect: "",
+            storyWrong: "Stopping contractions stalls labor! The baby cannot be born without building contractions. Tap Oxytocin!"
+          },
+          {
+            label: "Brain Releases Oxytocin (Boosts Contractions Harder)",
+            desc: "Oxytocin makes uterine muscles contract with greater force, pushing baby harder against the cervix.",
+            delta: +27,
+            isCorrect: true,
+            storyCorrect: "Oxytocin boosts contractions! Each push causes more oxytocin in a runaway surge toward 100%!",
+            storyWrong: ""
+          }
+        ],
+        explanation: "Unlike temperature or sugar, the body didn't stop at a normal middle level. It <strong>amplified the change in the same direction</strong> until reaching a definitive finish line (the baby being born). That is a <strong>Positive Feedback Loop</strong>."
+      },
+
+      // 6. SEVERE SHOCK: A DANGEROUS DOWNWARD SPIRAL
+      {
+        id: "shock_phase1",
+        topic: "Severe Shock: When Homeostasis Fails",
+        headerGoal: "🎯 Part 1: Stabilize Pressure (120 mmHg)",
+        goalZoneLabel: "🎯 Checkpoint",
+        targetCallout: "🎯 Checkpoint: Normal (120 mmHg)",
+        targetDescription: "Mild blood loss lowers blood pressure to 100 mmHg. Use the body's normal response to restore 120 mmHg!",
+        stimulusTitle: "Mild Blood Loss Drops Pressure to 100 mmHg",
+        stimulusDesc: "A minor cut causes blood pressure to dip slightly below normal (120 mmHg).",
+        sensorName: "Pressure sensors in arteries (baroreceptors)",
+        metricName: "Arterial Blood Pressure",
+        unit: "mmHg",
+        scaleMin: 40,
+        scaleMax: 140,
+        targetZoneMin: 115,
+        targetZoneMax: 125,
+        initialVal: 100,
+        targetVal: 120,
+        startDirection: "below",
+        targetType: "checkpoint",
+        loopType: "negative",
+        congratulationTitle: "🎯 Checkpoint Reached: 120 mmHg!",
+        congratulationDesc: "Normal negative feedback worked! Heart pumped faster and vessels squeezed to restore pressure.",
+        idleVisual: `<div class="text-4xl">🩹💓</div><div class="text-xs text-sky-300 font-semibold">Mild drop: 100 mmHg</div>`,
+        actionVisualCorrect: `<div class="text-4xl">💓⚡🛡️</div><div class="text-xs text-emerald-300 font-semibold">Heart beats faster & blood vessels tighten!</div>`,
+        actionVisualWrong: `<div class="text-4xl">😴📉⚠️</div><div class="text-xs text-rose-400 font-semibold">Vessels dilated, dropping pressure further!</div>`,
+        options: [
+          {
+            label: "Heart Beats Faster & Blood Vessels Constrict (Normal Fix)",
+            desc: "The brain commands the heart to pump more blood and tightens blood vessels to boost pressure.",
+            delta: +7,
+            isCorrect: true,
+            storyCorrect: "Heart beats faster and vessels squeeze! Pressure rises back to the 120 mmHg checkpoint.",
+            storyWrong: ""
+          },
+          {
+            label: "Heart Slows Down & Vessels Open Wide",
+            desc: "Heart rests and vessels dilate.",
+            delta: -10,
+            isCorrect: false,
+            storyCorrect: "",
+            storyWrong: "Slowing down drops pressure lower! Tap the normal fix to restore 120 mmHg."
+          }
+        ],
+        explanation: "In Part 1, the body counteracted the drop and steered back to the 120 mmHg checkpoint. That was successful <strong>Negative Feedback</strong>!"
+      }
+    ];
+
+    // Dynamic Phase 2 data for Severe Shock
+    const SHOCK_PHASE_2 = {
+      id: "shock_phase2",
+      topic: "Severe Shock: When Homeostasis Fails (Part 2)",
+      headerGoal: "⚠️ Threshold: Crash (<50 mmHg)",
+      goalZoneLabel: "Shock Crash",
+      targetCallout: "⚠️ Danger Threshold: Shock Crash (<50 mmHg)",
+      targetDescription: "Massive bleeding empties blood vessels! Watch how each failure makes the heart weaker, spiraling into shock.",
+      stimulusTitle: "Massive Hemorrhage / Bleeding (Pressure crashes to 70 mmHg)",
+      stimulusDesc: "Severe injury causes massive blood loss. Blood pressure plummets to 70 mmHg. The heart muscle itself runs out of oxygen!",
+      sensorName: "Pressure sensors in starved arteries",
+      metricName: "Arterial Blood Pressure",
+      unit: "mmHg",
+      scaleMin: 40,
+      scaleMax: 140,
+      targetZoneMin: 40,
+      targetZoneMax: 50,
+      initialVal: 70,
+      targetVal: 45,
+      startDirection: "above",
+      targetType: "goal",
+      loopType: "positive",
+      congratulationTitle: "⚠️ Danger Threshold Reached: Circulatory Collapse!",
+      congratulationDesc: "Each drop starved the heart muscle more, which pumped even less blood in an escalating downward spiral!",
+      idleVisual: `<div class="text-4xl">🚨💔🩸</div><div class="text-xs text-rose-400 font-semibold">Severe hemorrhage: 70 mmHg!</div>`,
+      actionVisualCorrect: `<div class="text-4xl anim-shiver">📉💔⚠️</div><div class="text-xs text-rose-400 font-semibold">Heart starves -> Pumps less blood -> Pressure crashes further!</div>`,
+      actionVisualWrong: `<div class="text-4xl">❓🤷</div><div class="text-xs text-slate-400 font-semibold">Homeostasis failed: not enough blood left to pump!</div>`,
+      options: [
+        {
+          label: "Vicious Cycle: Starved Heart Pumps Less Blood -> Pressure Falls",
+          desc: "Less blood pressure means less oxygen reaches the heart muscle -> heart weakens and pumps even less blood!",
+          delta: -9,
+          isCorrect: true,
+          storyCorrect: "Heart starves from lack of blood -> weakens -> pressure crashes lower -> heart starves even more!",
+          storyWrong: ""
+        },
+        {
+          label: "Normal Attempt: Brain signals heart to beat faster",
+          desc: "Brain signals heart to beat faster and squeeze vessels, trying desperately to raise pressure.",
+          delta: +2,
+          isCorrect: false,
+          storyCorrect: "",
+          storyWrong: "The heart is running on empty! Without oxygen, it cannot maintain output."
+        }
+      ],
+      explanation: "<strong>'Positive' doesn't mean good or happy!</strong> It means the change <em>snowballs in the same direction</em>. When negative feedback was overwhelmed, the body got trapped in a runaway downward spiral (positive feedback) until doctors give a blood transfusion."
+    };
+
+    /* =========================================================================
+       GAME STATE
+       ========================================================================= */
+    const state = {
+      currentMissionIndex: 0,
+      activeMission: null,
+      currentValue: 0,
+      isTargetReached: false,
+      score: 0,
+      streak: 0,
+      maxStreak: 0,
+      taps: 0,
+      shockFailCount: 0,
+      shockAutoRunning: false
+    };
+
+    // DOM Elements
+    const dom = {
+      welcome: document.getElementById('screenWelcome'),
+      mission: document.getElementById('screenMission'),
+      panelQuizInPane: document.getElementById('panelQuizInPane'),
+      results: document.getElementById('screenResults'),
+      caseSelector: document.getElementById('caseSelector'),
+      btnStart: document.getElementById('btnStart'),
+      btnRestart: document.getElementById('btnRestart'),
+      btnSound: document.getElementById('btnSound'),
+      soundIcon: document.getElementById('soundIcon'),
+      scoreVal: document.getElementById('scoreVal'),
+      streakVal: document.getElementById('streakVal'),
+      quizNum: document.getElementById('quizNum'),
+      quizQuestionText: document.getElementById('quizQuestionText'),
+      quizOptionsContainer: document.getElementById('quizOptionsContainer'),
+      quizFeedbackBox: document.getElementById('quizFeedbackBox'),
+      btnNextQuiz: document.getElementById('btnNextQuiz'),
+      txtTopicBadge: document.getElementById('txtTopicBadge'),
+      txtHeaderGoal: document.getElementById('txtHeaderGoal'),
+      txtStimulus: document.getElementById('txtStimulus'),
+      txtSensor: document.getElementById('txtSensor'),
+      visualStage: document.getElementById('visualStage'),
+      txtMetricName: document.getElementById('txtMetricName'),
+      targetCalloutBadge: document.getElementById('targetCalloutBadge'),
+      barGreenZone: document.getElementById('barGreenZone'),
+      barGoalZone: document.getElementById('barGoalZone'),
+      txtGoalZoneLabel: document.getElementById('txtGoalZoneLabel'),
+      meterNeedle: document.getElementById('meterNeedle'),
+      txtScaleMin: document.getElementById('txtScaleMin'),
+      txtScaleMax: document.getElementById('txtScaleMax'),
+      txtCurrentVal: document.getElementById('txtCurrentVal'),
+      txtUnit: document.getElementById('txtUnit'),
+      txtNarrative: document.getElementById('txtNarrative'),
+      panelEffectors: document.getElementById('panelEffectors'),
+      tapCountBadge: document.getElementById('tapCountBadge'),
+      effectorButtonsContainer: document.getElementById('effectorButtonsContainer'),
+      panelClassification: document.getElementById('panelClassification'),
+      txtSuccessTitle: document.getElementById('txtSuccessTitle'),
+      txtSuccessDesc: document.getElementById('txtSuccessDesc'),
+      btnNegative: document.getElementById('btnNegative'),
+      btnPositive: document.getElementById('btnPositive'),
+      panelSummary: document.getElementById('panelSummary'),
+      summaryBadgeIcon: document.getElementById('summaryBadgeIcon'),
+      summaryTitle: document.getElementById('summaryTitle'),
+      summarySubtitle: document.getElementById('summarySubtitle'),
+      txtSummaryExplanation: document.getElementById('txtSummaryExplanation'),
+      sumBoxStimulus: document.getElementById('sumBoxStimulus'),
+      sumBoxSensor: document.getElementById('sumBoxSensor'),
+      sumBoxEffector: document.getElementById('sumBoxEffector'),
+      sumBoxType: document.getElementById('sumBoxType'),
+      btnNextMission: document.getElementById('btnNextMission'),
+      txtFinalScore: document.getElementById('txtFinalScore'),
+      txtFinalStreak: document.getElementById('txtFinalStreak')
+    };
+
+    /* =========================================================================
+       INITIALIZATION & FLOW
+       ========================================================================= */
+    function startGame() {
+      state.score = 0;
+      state.streak = 0;
+      state.maxStreak = 0;
+      state.currentMissionIndex = 0;
+      updateHeader();
+
+      dom.welcome.classList.add('hidden');
+      dom.results.classList.add('hidden');
+      dom.mission.classList.remove('hidden');
+
+      loadMission(0);
+    }
+
+    function loadMission(index, customMission = null) {
+      state.currentMissionIndex = index;
+      const m = customMission || ALL_MISSIONS[index];
+      state.activeMission = m;
+      state.currentValue = m.initialVal;
+      state.isTargetReached = false;
+      state.taps = 0;
+      state.shockFailCount = 0;
+      state.shockAutoRunning = false;
+
+      // Restore landscape layout if returning from quiz
+      const colTelemetry = document.querySelector('.ipad-col-telemetry');
+      const colControls = document.querySelector('.ipad-col-controls');
+      if (colTelemetry) colTelemetry.classList.remove('hidden');
+      if (colControls) {
+        colControls.classList.remove('col-span-12', 'w-full', 'max-w-2xl', 'mx-auto');
+        colControls.classList.add('ipad-col-controls');
+      }
+
+      // Update Header & Dropdown
+      dom.caseSelector.value = index;
+      dom.txtTopicBadge.textContent = m.topic;
+      dom.txtHeaderGoal.textContent = m.headerGoal;
+      dom.targetCalloutBadge.textContent = m.targetCallout;
+      dom.txtStimulus.textContent = m.stimulusDesc;
+      dom.txtSensor.textContent = m.sensorName;
+      dom.txtMetricName.textContent = m.metricName.toUpperCase();
+      dom.txtUnit.textContent = m.unit;
+      dom.txtScaleMin.textContent = `${m.scaleMin}${m.unit}`;
+      dom.txtScaleMax.textContent = `${m.scaleMax}${m.unit}`;
+      dom.tapCountBadge.textContent = "Tap to Steer";
+
+      // Visual Stage
+      dom.visualStage.innerHTML = m.idleVisual;
+      dom.txtNarrative.textContent = m.targetDescription;
+
+      // Configure Meter Zones
+      const range = m.scaleMax - m.scaleMin;
+      if (m.targetType === "checkpoint") {
+        dom.barGreenZone.classList.remove('hidden');
+        dom.barGoalZone.classList.add('hidden');
+        const minPct = ((m.targetZoneMin - m.scaleMin) / range) * 100;
+        const widthPct = ((m.targetZoneMax - m.targetZoneMin) / range) * 100;
+        dom.barGreenZone.style.left = `${minPct}%`;
+        dom.barGreenZone.style.width = `${Math.max(10, widthPct)}%`;
+      } else {
+        dom.barGreenZone.classList.add('hidden');
+        dom.barGoalZone.classList.remove('hidden');
+        dom.txtGoalZoneLabel.textContent = m.goalZoneLabel || "Goal";
+
+        // Position goal / threshold zone dynamically (Left for shock low threshold, Right for childbirth)
+        const minPct = ((m.targetZoneMin - m.scaleMin) / range) * 100;
+        const widthPct = ((m.targetZoneMax - m.targetZoneMin) / range) * 100;
+        dom.barGoalZone.style.left = `${minPct}%`;
+        dom.barGoalZone.style.width = `${Math.max(14, widthPct)}%`;
+        dom.barGoalZone.style.right = 'auto';
+
+        if (m.id === "shock_phase2") {
+          dom.barGoalZone.className = "absolute top-1 bottom-1 bg-rose-500/25 border-2 border-dashed border-rose-400 rounded-lg flex items-center justify-center";
+          dom.txtGoalZoneLabel.className = "text-[10px] font-mono-code font-bold text-rose-300 text-center leading-tight px-1";
+        } else {
+          dom.barGoalZone.className = "absolute top-1 bottom-1 bg-pink-500/25 border-2 border-dashed border-pink-400 rounded-lg flex items-center justify-center";
+          dom.txtGoalZoneLabel.className = "text-[10px] font-mono-code font-bold text-pink-300 text-center leading-tight px-1";
+        }
+      }
+
+      updateNeedlePosition();
+
+      // Setup Panels
+      dom.panelEffectors.classList.remove('hidden');
+      dom.panelEffectors.classList.remove('opacity-50', 'pointer-events-none');
+      dom.panelClassification.classList.add('hidden');
+      dom.panelSummary.classList.add('hidden');
+      dom.panelQuizInPane.classList.add('hidden');
+
+      renderEffectorButtons(m);
+    }
+
+    function renderEffectorButtons(m) {
+      dom.effectorButtonsContainer.innerHTML = '';
+      // Rule: Sort by delta but NO arrows - students must read descriptions to determine direction
+      const sortedOptions = [...m.options].sort((a, b) => a.delta - b.delta);
+
+      sortedOptions.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full p-3 rounded-xl bg-slate-950 border-2 border-slate-800 hover:border-cyan-400 text-left transition-all group flex flex-col justify-between active:scale-95";
+        btn.innerHTML = `
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-700 group-hover:bg-cyan-400 transition"></span>
+            <span class="text-xs font-bold text-slate-200 group-hover:text-white leading-tight font-friendly">
+              ${opt.label}
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-snug pl-4.5">
+            ${opt.desc}
+          </p>
+        `;
+        btn.onclick = () => tapEffector(opt);
+        dom.effectorButtonsContainer.appendChild(btn);
+      });
+    }
+
+    /* =========================================================================
+       REAL-TIME INTERACTIVE TAP CONTROL & SHOCK FAILURE AUTOMATION
+       ========================================================================= */
+    function tapEffector(opt) {
+      if (state.isTargetReached || state.shockAutoRunning) return;
+      state.taps++;
+      dom.tapCountBadge.textContent = `Taps: ${state.taps}`;
+
+      const m = state.activeMission;
+      sound.beep(400 + state.taps * 30);
+
+      // Jolt needle animation
+      dom.meterNeedle.classList.add('jolt');
+      setTimeout(() => dom.meterNeedle.classList.remove('jolt'), 300);
+
+      // SPECIAL BEHAVIOR: Severe Shock Phase 2 (Futile attempt triggers runaway vicious cycle)
+      if (m.id === "shock_phase2") {
+        if (!opt.isCorrect) {
+          // Student clicks the normal attempt button
+          state.shockFailCount++;
+          if (state.shockFailCount <= 2) {
+            state.currentValue += 2; // tiny futile rise
+            updateNeedlePosition();
+            sound.uhOh();
+            dom.txtNarrative.textContent = `Tapping Normal Attempt: Heart beats faster, but with no oxygen or blood volume, it only reaches ${state.currentValue.toFixed(0)} mmHg! Can't maintain it!`;
+          } else {
+            // Futile failure triggers automatic downward spiral!
+            triggerAutomaticShockSpiral();
+          }
+          return;
+        } else {
+          // If they click the vicious cycle directly, trigger the downward spiral
+          triggerAutomaticShockSpiral();
+          return;
+        }
+      }
+
+      if (opt.isCorrect) {
+        state.currentValue += opt.delta;
+        dom.visualStage.innerHTML = m.actionVisualCorrect;
+        dom.txtNarrative.textContent = opt.storyCorrect;
+
+        // Check if target reached with snap-to-checkpoint logic
+        let reached = false;
+        if (m.startDirection === "above") {
+          if (state.currentValue <= m.targetZoneMax) {
+            reached = true;
+            state.currentValue = m.targetVal;
+          }
+        } else if (m.startDirection === "below") {
+          if (state.currentValue >= m.targetZoneMin) {
+            reached = true;
+            state.currentValue = m.targetVal;
+          }
+        }
+
+        updateNeedlePosition();
+
+        if (reached) {
+          triggerTargetReached();
+        }
+      } else {
+        // Wrong button pushed away
+        state.currentValue += opt.delta;
+        state.currentValue = Math.max(m.scaleMin, Math.min(m.scaleMax, state.currentValue));
+        sound.uhOh();
+        dom.visualStage.innerHTML = m.actionVisualWrong;
+        dom.txtNarrative.textContent = opt.storyWrong;
+        updateNeedlePosition();
+      }
+    }
+
+    function triggerAutomaticShockSpiral() {
+      state.shockAutoRunning = true;
+      dom.panelEffectors.classList.add('opacity-50', 'pointer-events-none');
+      sound.uhOh();
+
+      dom.visualStage.innerHTML = `<div class="text-4xl anim-shiver">⚠️💔📉</div><div class="text-xs text-rose-400 font-semibold">HOMEOSTASIS COLLAPSED: Vicious Cycle Engaged!</div>`;
+      dom.txtNarrative.textContent = "Futile! The heart runs out of oxygen! The vicious cycle has taken over automatically—it's out of control!";
+
+      const crashSteps = [64, 55, 45];
+      let stepIdx = 0;
+
+      const crashInterval = setInterval(() => {
+        if (stepIdx < crashSteps.length) {
+          state.currentValue = crashSteps[stepIdx];
+          updateNeedlePosition();
+          sound.beep(220 - (stepIdx * 30));
+
+          if (stepIdx === 0) {
+            dom.txtNarrative.textContent = "Step 1: Starved heart muscle weakens → Cardiac output drops to 64 mmHg!";
+          } else if (stepIdx === 1) {
+            dom.txtNarrative.textContent = "Step 2: Lower pressure means even LESS coronary blood flows to the heart muscle → Drops to 55 mmHg!";
+          } else if (stepIdx === 2) {
+            dom.txtNarrative.textContent = "Step 3: Heart begins failing! Blood pressure crashes into the shock danger threshold (45 mmHg)!";
+          }
+          stepIdx++;
+        } else {
+          clearInterval(crashInterval);
+          state.shockAutoRunning = false;
+          triggerTargetReached();
+        }
+      }, 1000);
+    }
+
+    function updateNeedlePosition() {
+      const m = state.activeMission;
+      const range = m.scaleMax - m.scaleMin;
+      let pct = ((state.currentValue - m.scaleMin) / range) * 100;
+      pct = Math.max(2, Math.min(96, pct));
+      dom.meterNeedle.style.left = `calc(${pct}% - 12px)`;
+      dom.txtCurrentVal.textContent = typeof state.currentValue === 'number' ? state.currentValue.toFixed(1) : state.currentValue;
+    }
+
+    /* =========================================================================
+       SUCCESS TRANSITION TO CLASSIFICATION
+       ========================================================================= */
+    function triggerTargetReached() {
+      state.isTargetReached = true;
+      sound.win();
+      spawnConfetti();
+
+      const m = state.activeMission;
+      dom.txtSuccessTitle.textContent = m.congratulationTitle;
+      dom.txtSuccessDesc.textContent = m.congratulationDesc;
+
+      // Lock buttons
+      dom.panelEffectors.classList.add('opacity-50', 'pointer-events-none');
+      dom.panelClassification.classList.remove('hidden');
+
+      // Scroll slightly on mobile if needed
+      dom.panelClassification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /* =========================================================================
+       CLASSIFY POSITIVE VS. NEGATIVE
+       ========================================================================= */
+    function classifyLoop(chosenType) {
+      const m = state.activeMission;
+      const isCorrect = (chosenType === m.loopType);
+
+      if (isCorrect) {
+        state.score += 100 + (state.streak * 20);
+        state.streak += 1;
+        if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+        sound.win();
+
+        dom.summaryBadgeIcon.className = "w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-400 flex items-center justify-center font-bold text-sm";
+        dom.summaryBadgeIcon.textContent = "✓";
+        dom.summaryTitle.textContent = "Correct! Great Diagnosis!";
+        dom.summarySubtitle.textContent = `${m.loopType.toUpperCase()} FEEDBACK LOOP CONFIRMED`;
+      } else {
+        state.streak = 0;
+        sound.uhOh();
+
+        dom.summaryBadgeIcon.className = "w-7 h-7 rounded-lg bg-rose-950 border border-rose-800 text-rose-400 flex items-center justify-center font-bold text-sm";
+        dom.summaryBadgeIcon.textContent = "✕";
+        dom.summaryTitle.textContent = "Almost! Look at the direction:";
+        dom.summarySubtitle.textContent = `THIS WAS ACTUALLY A ${m.loopType.toUpperCase()} LOOP`;
+      }
+
+      updateHeader();
+
+      dom.txtSummaryExplanation.innerHTML = m.explanation;
+      dom.sumBoxStimulus.textContent = m.stimulusTitle;
+      dom.sumBoxSensor.textContent = m.sensorName;
+      dom.sumBoxEffector.textContent = m.options.find(o => o.isCorrect)?.label || "...";
+      dom.sumBoxType.textContent = m.loopType === 'negative' ? '⚖️ Negative (Steered Back)' : '🚀 Positive (Amplified)';
+      dom.sumBoxType.className = m.loopType === 'negative' ? 'font-bold text-emerald-400 mt-0.5 block truncate' : 'font-bold text-pink-400 mt-0.5 block truncate';
+
+      dom.panelClassification.classList.add('hidden');
+      dom.panelSummary.classList.remove('hidden');
+
+      // Special Next Button handling for Shock 2-Phase
+      if (m.id === "shock_phase1") {
+        dom.btnNextMission.textContent = "Part 2: Trigger Bleeding →";
+        dom.btnNextMission.onclick = () => loadMission(5, SHOCK_PHASE_2);
+      } else if (m.id === "shock_phase2") {
+        dom.btnNextMission.textContent = "Take Quick Mastery Quiz →";
+        dom.btnNextMission.onclick = startQuiz;
+      } else {
+        dom.btnNextMission.textContent = "Next Mission →";
+        dom.btnNextMission.onclick = advanceMission;
+      }
+    }
+
+    function advanceMission() {
+      if (state.currentMissionIndex + 1 < ALL_MISSIONS.length) {
+        loadMission(state.currentMissionIndex + 1);
+      } else {
+        startQuiz();
+      }
+    }
+
+    /* =========================================================================
+       7-QUESTION QUIZ SYSTEM (Dedicated Hints & Full Screen Experience)
+       ========================================================================= */
+    const QUIZ_QUESTIONS = [
+      {
+        q: "1. In biology, what is a STIMULUS?",
+        options: [
+          { text: "The internal organ that takes physical action to repair the body.", correct: false, hint: "That's an effector (like a gland or muscle). The stimulus is what started the disturbance!" },
+          { text: "A physical or chemical change in the internal or external environment that causes a response.", correct: true, hint: "Spot on! The stimulus is the trigger or disturbance (like heat, cold, or blood loss) that initiates the loop." },
+          { text: "A hormone secreted into the blood to raise heart rate.", correct: false, hint: "A hormone is a chemical signal, not the initial disturbance itself. Think about what trigger disrupts balance." }
+        ]
+      },
+      {
+        q: "2. What is the specific role of a SENSOR (receptor)?",
+        options: [
+          { text: "To detect and monitor changes in the body and send signals about them.", correct: true, hint: "Spot on! Sensors (like temperature nerve endings or blood sugar detectors) notice when conditions shift." },
+          { text: "To shiver and create friction warmth when cold.", correct: false, hint: "Shivering is physical work done by muscles (effectors). Sensors only detect and report the temperature drop!" },
+          { text: "To store extra glucose in the liver as glycogen.", correct: false, hint: "Storing sugar is an effector action. A sensor only notices the glucose concentration level." }
+        ]
+      },
+      {
+        q: "3. What is the role of an EFFECTOR?",
+        options: [
+          { text: "The physical disturbance that started the event.", correct: false, hint: "That's the stimulus. An effector is the organ or tissue that actually responds to it." },
+          { text: "The part of the body (like sweat glands or shivering muscles) that takes physical action.", correct: true, hint: "Spot on! Sensors notice the change; effectors are the body parts that execute the adjustment." },
+          { text: "The brain's thermostat set point.", correct: false, hint: "The set point is the target value in the control center. Effectors are the tissues that do the physical work." }
+        ]
+      },
+      {
+        q: "4. Sweating when hot and shivering when cold are both examples of:",
+        options: [
+          { text: "Positive feedback, because both actions are good for your health.", correct: false, hint: "Remember: In science, 'positive' does NOT mean 'good for you'. It means pushing further in the same direction. Look at how both sweating and shivering push temperature back to 98.6°F!" },
+          { text: "Negative feedback, because both counteract the temperature change to return to the 98.6°F checkpoint.", correct: true, hint: "Spot on! Negative feedback counteracts or opposes deviation to restore equilibrium at the checkpoint." },
+          { text: "Positive feedback, because body temperature always increases.", correct: false, hint: "Sweating lowers temperature while shivering raises it. Both push in the opposite direction of the disturbance." }
+        ]
+      },
+      {
+        q: "5. Why is childbirth classified as a POSITIVE feedback loop?",
+        options: [
+          { text: "Because having a baby is a happy, positive life event.", correct: false, hint: "Careful! 'Positive' in biology has nothing to do with happiness or good news. It describes the direction of the system: each contraction commands even stronger contractions until delivery!" },
+          { text: "Because each contraction pushes the baby, releasing oxytocin that triggers even stronger contractions until birth.", correct: true, hint: "Spot on! Positive feedback amplifies the change in the same direction until a definitive finish line (delivery) is accomplished." },
+          { text: "Because contractions bring blood sugar back to a normal range.", correct: false, hint: "Contractions are muscular contractions of the uterus during labor, not metabolic blood sugar controls." }
+        ]
+      },
+      {
+        q: "6. When severe blood loss leads to shock and blood pressure crashes in a vicious cycle, why is that POSITIVE feedback?",
+        options: [
+          { text: "Because a weakened heart pumps less blood, causing pressure to drop further in an escalating downward spiral.", correct: true, hint: "Spot on! 'Positive' means amplifying in the same direction. A downward spiral is positive feedback because each failure accelerates the next failure." },
+          { text: "Because positive feedback always protects the organs from damage.", correct: false, hint: "Shock causes catastrophic damage! 'Positive' doesn't mean beneficial—it means self-reinforcing and snowballing." },
+          { text: "Because it keeps blood pressure steady at the 120 mmHg checkpoint.", correct: false, hint: "Shock causes blood pressure to crash below 50 mmHg—it completely fails to maintain the checkpoint." }
+        ]
+      },
+      {
+        q: "7. When blood sugar drops to 60 mg/dL after skipping a meal, glucagon raises it back to 90 mg/dL. Why is this NEGATIVE feedback even though numbers went up?",
+        options: [
+          { text: "Because skipping a meal is a negative situation.", correct: false, hint: "'Negative' in biology refers to counteracting deviation, not feeling hungry or having a bad day!" },
+          { text: "Because the body opposed the drop to steer back to the checkpoint set-point.", correct: true, hint: "Spot on! The disturbance was a drop (down); the body responded by pushing in the opposite direction (up) to restore the 90 mg/dL checkpoint." },
+          { text: "Because raising blood sugar always causes diabetes.", correct: false, hint: "Releasing stored glycogen back to 90 mg/dL is healthy and normal—it keeps your brain and muscles energized." }
+        ]
+      }
+    ];
+
+    let currentQuizIndex = 0;
+    let quizScore = 0;
+
+    function startQuiz() {
+      currentQuizIndex = 0;
+      quizScore = 0;
+
+      // Full screen quiz experience: Hide left telemetry stage and expand quiz column
+      const colTelemetry = document.querySelector('.ipad-col-telemetry');
+      const colControls = document.querySelector('.ipad-col-controls');
+      if (colTelemetry) colTelemetry.classList.add('hidden');
+      if (colControls) {
+        colControls.classList.remove('ipad-col-controls');
+        colControls.classList.add('col-span-12', 'w-full', 'max-w-2xl', 'mx-auto');
+      }
+
+      dom.panelEffectors.classList.add('hidden');
+      dom.panelClassification.classList.add('hidden');
+      dom.panelSummary.classList.add('hidden');
+      dom.panelQuizInPane.classList.remove('hidden');
+
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      const q = QUIZ_QUESTIONS[currentQuizIndex];
+      dom.quizNum.textContent = currentQuizIndex + 1;
+      dom.quizQuestionText.textContent = q.q;
+      dom.quizFeedbackBox.classList.add('hidden');
+      dom.btnNextQuiz.classList.add('hidden');
+      dom.quizOptionsContainer.innerHTML = '';
+
+      q.options.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full p-3 rounded-xl bg-slate-950 border-2 border-slate-800 hover:border-cyan-400 text-left text-xs text-slate-200 transition-all font-medium active:scale-95";
+        btn.textContent = opt.text;
+        btn.onclick = () => answerQuiz(opt, q, btn);
+        dom.quizOptionsContainer.appendChild(btn);
+      });
+    }
+
+    function answerQuiz(selectedOpt, q, clickedBtn) {
+      dom.quizFeedbackBox.classList.remove('hidden');
+
+      if (selectedOpt.correct) {
+        // Correct answer: lock options and allow advancing
+        sound.win();
+        quizScore++;
+        state.score += 50;
+        updateHeader();
+
+        Array.from(dom.quizOptionsContainer.children).forEach(btn => {
+          btn.classList.add('pointer-events-none');
+        });
+        clickedBtn.className = "w-full p-3 rounded-xl bg-emerald-950 border-2 border-emerald-500 text-left text-xs text-emerald-200 font-bold";
+
+        dom.quizFeedbackBox.className = "p-3 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs font-mono-code";
+        dom.quizFeedbackBox.innerHTML = `✓ <strong>Correct!</strong> ${selectedOpt.hint}`;
+
+        dom.btnNextQuiz.classList.remove('hidden');
+        if (currentQuizIndex + 1 < QUIZ_QUESTIONS.length) {
+          dom.btnNextQuiz.textContent = "Next Question →";
+          dom.btnNextQuiz.onclick = () => {
+            currentQuizIndex++;
+            renderQuizQuestion();
+          };
+        } else {
+          dom.btnNextQuiz.textContent = "See Final Results →";
+          dom.btnNextQuiz.onclick = showResults;
+        }
+      } else {
+        // Incorrect answer: Provide specific hint and prompt to try again without locking out
+        sound.uhOh();
+        clickedBtn.className = "w-full p-3 rounded-xl bg-rose-950/60 border-2 border-rose-500 text-left text-xs text-rose-300 font-medium";
+
+        dom.quizFeedbackBox.className = "p-3 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-300 text-xs font-mono-code";
+        dom.quizFeedbackBox.innerHTML = `✕ <strong>Not quite!</strong> ${selectedOpt.hint} <br><span class="text-amber-300 mt-1 inline-block">💡 Try another choice above!</span>`;
+      }
+    }
+
+    function showResults() {
+      sound.applause();
+      dom.panelQuizInPane.classList.add('hidden');
+      dom.mission.classList.add('hidden');
+      dom.results.classList.remove('hidden');
+
+      dom.txtFinalScore.textContent = state.score;
+      dom.txtFinalStreak.textContent = `🔥 ${state.maxStreak}`;
+      spawnConfetti(60);
+    }
+
+    function updateHeader() {
+      dom.scoreVal.textContent = state.score;
+      dom.streakVal.textContent = `🔥 ${state.streak}`;
+    }
+
+    /* =========================================================================
+       CONFETTI SYSTEM
+       ========================================================================= */
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function spawnConfetti(count = 35) {
+      const colors = ['#22d3ee', '#34d399', '#f472b6', '#fbbf24', '#818cf8'];
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: canvas.width * 0.5 + (Math.random() - 0.5) * 200,
+          y: canvas.height * 0.35 + (Math.random() - 0.5) * 80,
+          vx: (Math.random() - 0.5) * 8,
+          vy: Math.random() * -5 - 3,
+          size: Math.random() * 6 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * 0.2,
+          life: 1
+        });
+      }
+    }
+
+    function updateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.22;
+        p.rotation += p.rotationSpeed;
+        p.life -= 0.016;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+      requestAnimationFrame(updateParticles);
+    }
+    requestAnimationFrame(updateParticles);
+
+    /* =========================================================================
+       EVENT BINDINGS
+       ========================================================================= */
+    dom.btnStart.addEventListener('click', () => {
+      sound.init();
+      startGame();
+    });
+
+    dom.btnRestart.addEventListener('click', () => {
+      sound.init();
+      startGame();
+    });
+
+    dom.btnSound.addEventListener('click', () => {
+      sound.enabled = !sound.enabled;
+      dom.soundIcon.textContent = sound.enabled ? '🔊' : '🔇';
+    });
+
+    dom.caseSelector.addEventListener('change', (e) => {
+      sound.init();
+      const idx = parseInt(e.target.value, 10);
+      dom.welcome.classList.add('hidden');
+      dom.results.classList.add('hidden');
+      dom.mission.classList.remove('hidden');
+      loadMission(idx);
+    });
+
+    dom.btnNegative.addEventListener('click', () => classifyLoop('negative'));
+    dom.btnPositive.addEventListener('click', () => classifyLoop('positive'));
+  </script>
+</body>
+</html>
