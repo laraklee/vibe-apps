@@ -1,0 +1,5 @@
+# gitleaks settings: the built-in secret rules (API keys, tokens, and so on).
+title = "vibe-apps"
+
+[extend]
+useDefault = true

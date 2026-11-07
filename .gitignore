@@ -1,0 +1,17 @@
+# Credentials: never commit
+.env
+*.pem
+*.key
+
+# Student data: never store in this folder
+*.csv
+*.tsv
+*.xlsx
+*.xls
+exports/
+
+# Tools and system files
+node_modules/
+.DS_Store
+Thumbs.db
+.claude/settings.local.json

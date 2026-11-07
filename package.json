@@ -1,0 +1,8 @@
+{
+  "name": "vibe-apps",
+  "private": true,
+  "description": "Lara's single-page HTML class apps (review and prelab), with security checks.",
+  "scripts": {
+    "scan": "bash scripts/scan.sh"
+  }
+}
