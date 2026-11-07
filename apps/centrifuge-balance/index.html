@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* Transparent background for Google Sites Embed */
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background: transparent; 
+            margin: 0; 
+            overflow: hidden;
+        }
+
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 30px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
+            text-align: center; 
+            width: 350px; 
+            border: 2px solid #e2e8f0; 
+        }
+        
+        .rotor-base { 
+            position: relative; 
+            width: 260px; 
+            height: 260px; 
+            background: #cbd5e1; 
+            border: 10px solid #94a3b8; 
+            border-radius: 50%; 
+            margin: 20px auto; 
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .well {
+            position: absolute; 
+            width: 52px; 
+            height: 52px; 
+            border-radius: 50%;
+            border: 3px solid #64748b; 
+            background: white; 
+            display: flex;
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold;
+            cursor: pointer; 
+            transform: translate(-50%, -50%); 
+            z-index: 100;
+            font-size: 11px; 
+            transition: all 0.2s ease; 
+            user-select: none;
+        }
+
+        /* Dark Cyan Theme - Matching your banner */
+        .well.dna { background: #008B8B !important; color: white; border-color: #006666; }
+        .well.water { background: #e0f2f1; color: #006666; border-color: #008B8B; }
+
+        .w1 { top: 15%; left: 50%; }
+        .w2 { top: 32.5%; left: 80.3%; }
+        .w3 { top: 67.5%; left: 80.3%; }
+        .w4 { top: 85%; left: 50%; }
+        .w5 { top: 67.5%; left: 19.7%; }
+        .w6 { top: 32.5%; left: 19.7%; }
+
+        sub { vertical-align: sub; font-size: 0.7em; line-height: 0; }
+
+        .btn-spin { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 15px;
+            background: #008B8B; 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-top: 10px; 
+            box-shadow: 0 4px 0 #006666;
+            transition: all 0.1s;
+        }
+        
+        .btn-spin:hover { background: #007a7a; }
+        .btn-spin:active { transform: translateY(2px); box-shadow: 0 2px 0 #006666; }
+        .btn-spin:disabled { background: #cbd5e1; box-shadow: 0 4px 0 #94a3b8; cursor: not-allowed; }
+
+        .score-pill { background: #f1f5f9; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #475569; display: inline-block; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+
+        @keyframes spinning { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
+        .is-spinning { animation: spinning 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        
+        @keyframes shaking { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(6px); } 75% { transform: translateX(-6px); } }
+        .is-shaking { animation: shaking 0.1s infinite; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="score-pill">Challenge: <span id="tally">0</span> / 4</div>
+    <h2 id="goalText" style="color: #008B8B; margin: 5px 0 15px 0; font-size: 22px;">Goal: Loading...</h2>
+    
+    <div id="shaker">
+        <div id="rotor" class="rotor-base">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #475569; border-radius: 50%;"></div>
+            
+            <div id="well0" class="well w1" onclick="cycle(0)">1</div>
+            <div id="well1" class="well w2" onclick="cycle(1)">2</div>
+            <div id="well2" class="well w3" onclick="cycle(2)">3</div>
+            <div id="well3" class="well w4" onclick="cycle(3)">4</div>
+            <div id="well4" class="well w5" onclick="cycle(4)">5</div>
+            <div id="well5" class="well w6" onclick="cycle(5)">6</div>
+        </div>
+    </div>
+
+    <div id="status" style="min-height: 20px; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #94a3b8; text-transform: uppercase;">READY TO LOAD</div>
+    
+    <button id="spinBtn" class="btn-spin" onclick="run()">CLOSE LID & SPIN</button>
+</div>
+
+<script>
+    var states = [0, 0, 0, 0, 0, 0]; 
+    var busy = false;
+    var tally = 0;
+    var waterRequired = false;
+    
+    // Create a shuffled array of goals [1, 2, 3, 4] to ensure no repeats
+    var goalQueue = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+    var target = goalQueue[0];
+
+    function cycle(idx) {
+        if (busy || tally >= 4) return;
+        states[idx] = (states[idx] + 1) % 3;
+        var el = document.getElementById('well' + idx);
+        
+        if (states[idx] === 1) {
+            el.className = "well dna w" + (idx+1);
+            el.innerHTML = "DNA";
+        } else if (states[idx] === 2) {
+            el.className = "well water w" + (idx+1);
+            el.innerHTML = "H<sub>2</sub>O"; 
+        } else {
+            el.className = "well w" + (idx+1);
+            el.innerText = (idx + 1);
+        }
+        document.getElementById('status').innerText = "LID OPEN - READY";
+        document.getElementById('status').style.color = "#94a3b8";
+    }
+
+    function isBalanced() {
+        var x = 0, y = 0, count = 0;
+        for (var i = 0; i < 6; i++) {
+            if (states[i] > 0) {
+                var rad = (i * 60 - 90) * (Math.PI / 180);
+                x += Math.cos(rad); y += Math.sin(rad); count++;
+            }
+        }
+        return (count > 0 && Math.sqrt(x*x + y*y) < 0.1);
+    }
+
+    function run() {
+        if (busy || tally >= 4) return;
+        
+        var balanced = isBalanced();
+        var dnaCount = 0;
+        var waterCount = 0;
+        for(var i=0; i<6; i++) {
+            if(states[i] === 1) dnaCount++;
+            if(states[i] === 2) waterCount++;
+        }
+
+        // Logic check
+        if (balanced && dnaCount === target) {
+            // Special constraint: If they haven't used water yet by the last task, force them to use it
+            if (tally === 3 && !waterRequired && waterCount === 0) {
+                document.getElementById('status').innerText = "FINAL TASK REQUIRES A BLANK (H2O)!";
+                document.getElementById('status').style.color = "#008B8B";
+                return;
+            }
+
+            busy = true;
+            if (waterCount > 0) waterRequired = true;
+            
+            const rotor = document.getElementById('rotor');
+            rotor.classList.remove('is-spinning');
+            void rotor.offsetWidth; // Trigger reflow
+            rotor.classList.add('is-spinning');
+            
+            document.getElementById('status').innerText = "SPINNING...";
+            document.getElementById('status').style.color = "#008B8B";
+
+            setTimeout(function() {
+                busy = false;
+                tally++;
+                document.getElementById('tally').innerText = tally;
+                
+                if (tally >= 4) {
+                    document.getElementById('status').innerText = "CERTIFIED LAB TECHNICIAN!";
+                    document.getElementById('status').style.color = "#10b981";
+                    document.getElementById('goalText').innerText = "🎉 MASTERY ACHIEVED!";
+                    document.getElementById('spinBtn').disabled = true;
+                    document.getElementById('spinBtn').innerText = "COMPLETE";
+                } else {
+                    document.getElementById('status').innerText = "SUCCESS! CALIBRATING NEXT...";
+                    target = goalQueue[tally]; // Get next unique target
+                    setTimeout(resetUI, 1500);
+                }
+            }, 2600);
+        } else if (!balanced) {
+            document.getElementById('shaker').className = "is-shaking";
+            document.getElementById('status').innerText = "⚠️ UNBALANCED! CHECK POSITIONING";
+            document.getElementById('status').style.color = "#ef4444";
+            setTimeout(function() { document.getElementById('shaker').className = ""; }, 800);
+        } else {
+            document.getElementById('status').innerText = "WRONG DNA COUNT! NEED " + target;
+            document.getElementById('status').style.color = "#008B8B";
+        }
+    }
+
+    function resetUI() {
+        states = [0, 0, 0, 0, 0, 0];
+        document.getElementById('rotor').classList.remove('is-spinning');
+        document.getElementById('goalText').innerText = "Goal: Load " + target + (target === 1 ? " Sample" : " Samples");
+        for(var i=0; i<6; i++) {
+            var el = document.getElementById('well' + i);
+            el.className = "well w" + (i+1);
+            el.innerText = (i + 1);
+        }
+        document.getElementById('status').innerText = "LID OPEN - READY";
+        document.getElementById('status').style.color = "#94a3b8";
+    }
+
+    // Initialize
+    document.getElementById('goalText').innerText = "Goal: Load " + target + (target === 1 ? " Sample" : " Samples");
+</script>
+
+</body>
+</html>
