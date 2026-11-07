@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipette Mastery Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@800&display=swap');
+        
+        body { 
+            background: transparent; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+
+        .pipette-font { font-family: 'JetBrains+Mono', monospace; }
+        .black-bg { background-color: #000000; }
+        
+        .digit-display {
+            font-size: 3.5rem;
+            color: white;
+            width: 60px;
+            text-align: center;
+            border: 1px solid #333;
+            margin: 0 4px;
+            display: inline-block;
+        }
+        
+        .is-decimal { color: #ff4d4d !important; }
+        
+        .dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; transition: all 0.3s ease; }
+        .dot-empty { background-color: #e2e8f0; border: 1px solid #cbd5e1; }
+        .dot-filled { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 350px;
+            border: 2px solid #e2e8f0;
+        }
+
+        /* Branding Color */
+        .btn-primary {
+            background-color: #008B8B;
+            box-shadow: 0 4px 0 #006666;
+        }
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #006666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="mb-6 space-y-3">
+            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <div class="text-center">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-1">P20 Mastery</p>
+                    <div class="flex space-x-1 justify-center">
+                        <span id="p20-1" class="dot dot-empty"></span>
+                        <span id="p20-2" class="dot dot-empty"></span>
+                    </div>
+                </div>
+                <div class="h-8 w-[1px] bg-slate-200"></div>
+                <div class="text-center">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-1">P200 Mastery</p>
+                    <div class="flex space-x-1 justify-center">
+                        <span id="p200-1" class="dot dot-empty"></span>
+                        <span id="p200-2" class="dot dot-empty"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="toolTag" class="text-center px-4 py-1 rounded-full text-white font-bold transition-all duration-500 shadow-sm">P20</div>
+        </div>
+
+        <div class="black-bg p-4 rounded-xl text-center mb-8 shadow-inner ring-4 ring-slate-100">
+            <div class="pipette-font flex justify-center">
+                <div id="d1" class="digit-display">0</div>
+                <div id="d2" class="digit-display">0</div>
+                <div id="d3" class="digit-display">0</div>
+            </div>
+            <div class="text-[10px] text-slate-500 font-bold mt-2 tracking-widest uppercase">Volume Window</div>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <p class="text-center text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Enter the volume (μL)</p>
+                <input type="number" id="userGuess" step="0.1" inputmode="decimal"
+                       class="w-full border-4 border-slate-100 rounded-2xl p-4 text-3xl font-black text-center focus:border-[#008B8B] outline-none transition-all">
+            </div>
+            
+            <button id="submitBtn" onclick="checkAnswer()" class="btn-primary w-full text-white py-4 rounded-2xl font-bold text-xl active:scale-95 transition-all">
+                SUBMIT
+            </button>
+        </div>
+
+        <div id="feedbackBox" class="mt-6 p-4 rounded-xl text-center font-bold text-sm min-h-[60px] flex items-center justify-center border-2 border-transparent">
+            Observe the window above.
+        </div>
+    </div>
+
+    <script>
+        let currentVol = 0;
+        let toolType = "P20";
+        let scoreP20 = 0;
+        let scoreP200 = 0;
+        
+        // Ensure numbers don't repeat immediately
+        let lastVol = 0;
+
+        function updateMasteryUI() {
+            document.getElementById('p20-1').className = scoreP20 >= 1 ? 'dot dot-filled' : 'dot dot-empty';
+            document.getElementById('p20-2').className = scoreP20 >= 2 ? 'dot dot-filled' : 'dot dot-empty';
+            document.getElementById('p200-1').className = scoreP200 >= 1 ? 'dot dot-filled' : 'dot dot-empty';
+            document.getElementById('p200-2').className = scoreP200 >= 2 ? 'dot dot-filled' : 'dot dot-empty';
+        }
+
+        function setup() {
+            if (scoreP20 >= 2 && scoreP200 >= 2) {
+                document.getElementById('feedbackBox').innerHTML = "🎯 CERTIFIED!<br>You have mastered both tools.";
+                document.getElementById('feedbackBox').className = "mt-6 p-4 rounded-xl text-center font-bold text-sm min-h-[60px] flex items-center justify-center border-2 border-[#008B8B] bg-slate-50 text-[#008B8B]";
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').style.opacity = "0.5";
+                return;
+            }
+
+            // Decide tool
+            if (scoreP20 < 2 && scoreP200 < 2) {
+                toolType = Math.random() > 0.5 ? "P20" : "P200";
+            } else if (scoreP20 < 2) {
+                toolType = "P20";
+            } else {
+                toolType = "P200";
+            }
+
+            const tag = document.getElementById('toolTag');
+            tag.innerText = toolType;
+            // Pop colors: Amber for P20, Royal Blue for P200
+            tag.style.backgroundColor = toolType === "P20" ? "#f59e0b" : "#2563eb";
+
+            // Generate Volume (Ensuring no immediate repeat)
+            let newVol;
+            do {
+                if (toolType === "P20") {
+                    newVol = (Math.random() * (18) + 2).toFixed(1);
+                } else {
+                    newVol = Math.floor(Math.random() * (180) + 20);
+                }
+            } while (newVol === lastVol);
+            
+            currentVol = newVol;
+            lastVol = currentVol;
+
+            const cleanStr = currentVol.toString().replace('.', '').padStart(3, '0');
+            document.getElementById('d1').innerText = cleanStr[0];
+            document.getElementById('d2').innerText = cleanStr[1];
+            document.getElementById('d3').innerText = cleanStr[2];
+
+            if (toolType === "P20") {
+                document.getElementById('d3').classList.add('is-decimal');
+            } else {
+                document.getElementById('d3').classList.remove('is-decimal');
+            }
+
+            document.getElementById('userGuess').value = "";
+            document.getElementById('userGuess').focus();
+        }
+
+        function checkAnswer() {
+            const guess = parseFloat(document.getElementById('userGuess').value);
+            const target = parseFloat(currentVol);
+            const box = document.getElementById('feedbackBox');
+
+            if (isNaN(guess)) return;
+
+            if (Math.abs(guess - target) < 0.01) {
+                if (toolType === "P20") scoreP20++;
+                else scoreP200++;
+                
+                updateMasteryUI();
+                box.innerText = "✅ CORRECT! " + currentVol + " μL";
+                box.className = "mt-6 p-4 rounded-xl text-center font-bold text-sm min-h-[60px] flex items-center justify-center border-2 border-emerald-500 bg-emerald-50 text-emerald-700";
+                setTimeout(setup, 1500);
+            } else {
+                // Reset progress for the current tool on error
+                if (toolType === "P20") scoreP20 = 0;
+                else scoreP200 = 0;
+                
+                updateMasteryUI();
+                box.innerHTML = "❌ INCORRECT.<br>The volume was: " + currentVol + " μL";
+                box.className = "mt-6 p-4 rounded-xl text-center font-bold text-sm min-h-[60px] flex items-center justify-center border-2 border-red-500 bg-red-50 text-red-700";
+                setTimeout(setup, 2000);
+            }
+        }
+
+        setup();
+    </script>
+</body>
+</html>
