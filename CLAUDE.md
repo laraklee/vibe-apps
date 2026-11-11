@@ -4,8 +4,7 @@ This repo holds Lara's small single-page HTML apps (review games, prelab
 activities, and similar), most first built in Gemini. Each app lives in its own
 folder under `apps/`. The whole `vibe-apps` folder is one Git repository.
 
-Lara is a high school science teacher, new to Claude Code and the command line.
-Explain commands in plain language when you propose them, and prefer small,
+Explain commands to Lara in plain language when you propose them, and prefer small,
 reviewable steps over large multi-file changes.
 
 ## Hard rules (never break these)
