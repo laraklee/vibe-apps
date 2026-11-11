@@ -43,7 +43,8 @@ Once that exists, start Claude Code on the new computer and paste this:
 > 2. Set my git name and email if they aren't set yet: ask me what to use.
 > 3. Install gitleaks from the official GitHub release for this computer, into my
 >    user folder (Mac: ~/.local/bin). Verify the checksum.
-> 4. Clone my private vibe-apps repo from GitHub into ~/code/vibe-apps.
+> 4. Clone my vibe-apps repo from GitHub into ~/code/vibe-apps, next to canvas-scripts
+>    (the personal-info check uses the word list in canvas-scripts/private/).
 > 5. Run `git config core.hooksPath .githooks` there.
 > 6. Run `npm run scan` and summarize the results.
 

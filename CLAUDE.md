@@ -26,6 +26,12 @@ reviewable steps over large multi-file changes.
 5. **Ask before publishing.** Never run `git push` or publish an app anywhere
    (GitHub Pages, a Claude artifact, Google Sites) without asking first.
 6. **Never read** `~/.clasprc.json`, `.env` files, or any credential file.
+7. **This repo is public.** Anyone can read every file and every old commit. No
+   personal details in committed files: no colleagues' or family members' names or
+   plans, no school name or internal school details, no personal emails, phone numbers,
+   or device usernames. Those go in the private notes repo at
+   `../canvas-scripts/private/` (see its README). The personal-info check reads its
+   `blocked-words.txt` when `canvas-scripts` sits next to this folder.
 
 ## How apps are organized
 
@@ -62,6 +68,7 @@ split it. Apps should work on phones and Chromebooks.
 - After every file edit, a hook runs `scripts/scan.sh` on the changed file. If it
   reports problems, fix them or explain them to Lara before moving on.
 - Before committing, run `npm run scan` (all apps). Git's pre-commit hook also runs
-  the secret scan and the HTML check, and blocks commits with must-fix problems.
+  the secret scan, the personal-info check (`scripts/check-personal.sh`), and the HTML
+  check, and blocks commits with must-fix problems.
 - When you finish a change, give Lara a short review summary: what changed, any new
   outside hosts or network calls, and the scan results.
