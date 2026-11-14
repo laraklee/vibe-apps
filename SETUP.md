@@ -31,7 +31,7 @@
 
 - [x] Mac
 - [x] First PC (November 7, 2026)
-- [ ] Second PC: still to do. Clone the repo and follow the steps below.
+- [x] Second PC (November 13, 2026)
 
 The easiest way to get the repo onto another computer is a private GitHub repository.
 Once that exists, start Claude Code on the new computer and paste this:
